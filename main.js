@@ -5,7 +5,7 @@ const cellContainer = document.querySelector("#cell-container")
 const triggerContainer = document.querySelector("#trigger-container")
 
 // Either "red" or "yellow" innerText.
-const turnIndicator = document.querySelector("#turn-indicator")
+const infoText = document.querySelector("#info-text")
 
 // Player alternates between 1 and -1.
 let player = 1
@@ -13,10 +13,10 @@ let player = 1
 const rowCount = 6
 const colCount = 7
 
-// Create 2D array of numnbers containing 0, 1, or -1 which
+// Create 2D array of numbers containing 0, 1, or -1 which
 // is current board state (empty, player 1, or player -1),
 // and add cell divs to cell container.
-function initGrid() {
+const grid = (function initGrid() {
     const grid = []
     for (let i = 0; i < rowCount; i++) {
         const row = []
@@ -29,14 +29,18 @@ function initGrid() {
         grid.push(row)
     }
     return grid
-}
+})()
 
-const grid = initGrid()
 
 // Respond to column triggered:
 // Find the position of the affected cell,
 // Update UI and grid.
 function playColumn(j) {
+    // Func to get player color.
+    function playerColor(player) {
+        return player == 1 ? 'red' : 'yellow' 
+    }
+
     // Func to read grid column.
     function readColumn(j) {
         const column = []
@@ -50,18 +54,31 @@ function playColumn(j) {
     function setCell(i, j) {
         grid[i][j] = player
         const cell = cellContainer.children[i * colCount + j]
-        console.log(cell)
-        cell.style.backgroundColor = player == 1 ? 'red' : 'yellow'
+        cell.style.backgroundColor = playerColor(player)
+    }
+
+    // Func to check win, given i, j move was the last one made.
+    function checkWin(i, j) {
+        const playerToCheck = grid[i][j]
+        // TODO implement.
+        return false
     }
 
     // Scan column for empty cell for player to play:
     const column = readColumn(j)
     for (let i = rowCount - 1; i > -1; i--) {
         if (column[i] == 0) { // Empty cell found:
-            setCell(i, j, player) // Update UI and grid.
+            setCell(i, j, player) // Update cell color and grid.
+            if (checkWin(i, j)) { // Update text and disable all triggers.
+                infoText.innerText = `${playerColor(player)} wins`
+                for (child of triggerContainer.children) {
+                    child.disabled = true
+                }
+                break // Winning move.
+            }
             player *= -1 // Alternate player.
-            turnIndicator.innerText = player == 1 ? 'red' : 'yellow' // Update turn indicator text.
-            return
+            infoText.innerText = `${playerColor(player)} turn` // Update turn indicator text.
+            break // Found empty cell, done handling column triggered.
         }
     }
 
