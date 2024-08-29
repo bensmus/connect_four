@@ -1,0 +1,29 @@
+:root {
+    --cell-size: 50px;
+    --grid-count: 7;
+}
+
+#cell-container {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-count), var(--cell-size));
+    max-width: calc(var(--grid-count) * var(--cell-size));
+    border: 1px solid black;
+    margin: 10px 0px;
+}
+
+#trigger-container {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-count), var(--cell-size));
+}
+
+.cell {
+    height: var(--cell-size);
+    width: var(--cell-size);
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.col-trigger {
+    height: var(--cell-size);
+    margin: 2px;
+}
