@@ -91,31 +91,35 @@ function playColumn(j) {
         const vert = readLine(i - 3, j, 1, 0, lineLength)
         const diagDown = readLine(i - 3, j - 3, 1, 1, lineLength)
         const diagUp = readLine(i + 3, j - 3, -1, 1, lineLength)
-        console.log({
-            'horiz': horiz,
-            'vert': vert,
-            'diagDown': diagDown,
-            'diagUp': diagUp
-        })
         return fourInARow(horiz) || fourInARow(vert) || fourInARow(diagDown) || fourInARow(diagUp)
+    }
+
+    function disableTriggers() {
+        for (child of triggerContainer.children) {
+            child.disabled = true
+        }
+    }
+
+    // Handle putting the connect four token at i, j.
+    function putToken(i, j) {
+        setCell(i, j, player) // Update cell color and grid.
+        if (checkWin(i, j)) { // Update text and disable all triggers.
+            infoText.innerText = `${playerColor(player)} wins`
+            disableTriggers()
+            return // Winning move.
+        }
+        player *= -1 // Alternate player.
+        infoText.innerText = `${playerColor(player)} turn` // Update turn indicator text.
+        return // Found empty cell, done handling column triggered.
     }
 
     // Scan column for empty cell for player to play:
     const column = readColumn(j)
 
     for (let i = rowCount - 1; i > -1; i--) {
-        if (column[i] == 0) { // Empty cell found:
-            setCell(i, j, player) // Update cell color and grid.
-            if (checkWin(i, j)) { // Update text and disable all triggers.
-                infoText.innerText = `${playerColor(player)} wins`
-                for (child of triggerContainer.children) {
-                    child.disabled = true
-                }
-                break // Winning move.
-            }
-            player *= -1 // Alternate player.
-            infoText.innerText = `${playerColor(player)} turn` // Update turn indicator text.
-            break // Found empty cell, done handling column triggered.
+        if (column[i] == 0) { // Empty row found for that column, i.e. empty cell found:
+            putToken(i, j)
+            break
         }
     }
 
