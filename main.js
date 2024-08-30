@@ -41,13 +41,23 @@ function playColumn(j) {
         return player == 1 ? 'red' : 'yellow' 
     }
 
+    function readLine(iStart, jStart, iDelta, jDelta, count) {
+        const line = []
+        let i = iStart
+        let j = jStart
+        for (let x = 0; x < count; x++) {
+            if (i < rowCount && i >= 0 && j < colCount && j >= 0) {
+                line.push(grid[i][j])
+            }
+            i += iDelta
+            j += jDelta
+        }
+        return line
+    }
+    
     // Func to read grid column.
     function readColumn(j) {
-        const column = []
-        for (let i = 0; i < rowCount; i++) {
-            column.push(grid[i][j])
-        }
-        return column
+        return readLine(0, j, 1, 0, rowCount)
     }
 
     // Func to update UI and grid.
@@ -60,12 +70,23 @@ function playColumn(j) {
     // Func to check win, given i, j move was the last one made.
     function checkWin(i, j) {
         const playerToCheck = grid[i][j]
-        // TODO implement.
+        const lineLength = 7
+        const horiz = readLine(i, j - 3, 0, 1, lineLength)
+        const vert = readLine(i - 3, j, 1, 0, lineLength)
+        const diagDown = readLine(i - 3, j - 3, 1, 1, lineLength)
+        const diagUp = readLine(i + 3, j - 3, -1, 1, lineLength)
+        console.log({
+            'horiz': horiz,
+            'vert': vert,
+            'diagDown': diagDown,
+            'diagUp': diagUp
+        })
         return false
     }
 
     // Scan column for empty cell for player to play:
     const column = readColumn(j)
+
     for (let i = rowCount - 1; i > -1; i--) {
         if (column[i] == 0) { // Empty cell found:
             setCell(i, j, player) // Update cell color and grid.
