@@ -7,6 +7,8 @@ const triggerContainer = document.querySelector("#trigger-container")
 // Either "red" or "yellow" innerText.
 const infoText = document.querySelector("#info-text")
 
+const replayButton = document.querySelector('#replay-button')
+
 // Player alternates between 1 and -1.
 let player = 1
 
@@ -20,7 +22,7 @@ const grid = (function initGrid() {
     const grid = []
     for (let i = 0; i < rowCount; i++) {
         const row = []
-        for (let j = 0; j < 7; j++) {
+        for (let j = 0; j < colCount; j++) {
             const cell = document.createElement('div')
             cell.classList.add('cell')
             cellContainer.appendChild(cell)
@@ -31,6 +33,28 @@ const grid = (function initGrid() {
     return grid
 })()
 
+// Enable or disable triggers.
+function setTriggers(to) {
+    for (child of triggerContainer.children) {
+        child.disabled = to
+    }
+}
+
+function resetGame() {
+    replayButton.disabled = true
+    infoText.innerText = 'red turn'
+    setTriggers(false)
+    player = 1
+    for (let i = 0; i < rowCount; i++) {
+        for (let j = 0; j < colCount; j++) {
+            grid[i][j] = 0
+            const cell = cellContainer.children[i * colCount + j]
+            cell.style.backgroundColor = 'white'
+        }
+    }
+}
+
+replayButton.addEventListener('click', resetGame)
 
 // Respond to column triggered:
 // Find the position of the affected cell,
@@ -94,23 +118,20 @@ function playColumn(j) {
         return fourInARow(horiz) || fourInARow(vert) || fourInARow(diagDown) || fourInARow(diagUp)
     }
 
-    function disableTriggers() {
-        for (child of triggerContainer.children) {
-            child.disabled = true
-        }
-    }
-
     // Handle putting the connect four token at i, j.
     function putToken(i, j) {
         setCell(i, j, player) // Update cell color and grid.
+        // Winning move:
         if (checkWin(i, j)) { // Update text and disable all triggers.
             infoText.innerText = `${playerColor(player)} wins`
-            disableTriggers()
-            return // Winning move.
+            setTriggers(true)
+            replayButton.disabled = false
+        } 
+        // Normal move:
+        else {
+            player *= -1 // Alternate player.
+            infoText.innerText = `${playerColor(player)} turn` // Update turn indicator text.
         }
-        player *= -1 // Alternate player.
-        infoText.innerText = `${playerColor(player)} turn` // Update turn indicator text.
-        return // Found empty cell, done handling column triggered.
     }
 
     // Scan column for empty cell for player to play:

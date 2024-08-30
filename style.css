@@ -3,6 +3,13 @@
     --grid-count: 7;
 }
 
+body {
+    margin: auto;
+    max-width: min-content;
+    padding: 30px;
+    font-family: sans-serif;
+}
+
 #cell-container {
     display: grid;
     grid-template-columns: repeat(var(--grid-count), var(--cell-size));
@@ -26,4 +33,16 @@
 .col-trigger {
     height: var(--cell-size);
     margin: 2px;
+}
+
+#info-and-replay-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#info-and-replay-container * {
+    width: 50%;
+    text-align: center;
 }
