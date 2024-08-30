@@ -70,6 +70,22 @@ function playColumn(j) {
     // Func to check win, given i, j move was the last one made.
     function checkWin(i, j) {
         const playerToCheck = grid[i][j]
+
+        function fourInARow(ar) {
+            let countInARow = 0
+            for (let i = 0; i < ar.length; i++) {
+                if (ar[i] == playerToCheck) {
+                    countInARow++
+                    if (countInARow == 4) {
+                        return true
+                    }
+                } else {
+                    countInARow = 0
+                }
+            }
+            return false
+        }
+
         const lineLength = 7
         const horiz = readLine(i, j - 3, 0, 1, lineLength)
         const vert = readLine(i - 3, j, 1, 0, lineLength)
@@ -81,7 +97,7 @@ function playColumn(j) {
             'diagDown': diagDown,
             'diagUp': diagUp
         })
-        return false
+        return fourInARow(horiz) || fourInARow(vert) || fourInARow(diagDown) || fourInARow(diagUp)
     }
 
     // Scan column for empty cell for player to play:
