@@ -7,14 +7,21 @@ function playerToColor(player) {
     } else if (player == -1) { // Player -1: yellow
         return 'yellow'
     } else {
-        throw new Error("Player integer must be -1 or 1");
+        throw new Error('Player integer must be -1 or 1');
     }
 }
 
 class Board {
+    /**
+     * @param {HTMLDivElement} cellContainer
+     * 
+     * Populate cellContainer (div with display grid styling) with cells and create
+     * tokens which is a 2D array containing -1, 0, and 1
+     * (player 1, player -1, and empty spaces on the board).
+     */
     constructor(cellContainer) {
         this.cellContainer = cellContainer
-        this.tokens = [] // Where are player tokens and empty spaces: 2D array.
+        this.tokens = []
         for (let i = 0; i < rowCount; i++) {
             const row = []
             for (let j = 0; j < columnCount; j++) {
@@ -27,6 +34,12 @@ class Board {
         }
     }
 
+    /**
+     * @param {number} column
+     * 
+     * Return a row where the token would drop to.
+     * If the row is filled, return -1.
+     */
     findTokenDropRow(column) {
         // Start from bottom:
         for (let row = rowCount - 1; row > -1; row--) {
@@ -37,12 +50,27 @@ class Board {
         return -1
     }
     
+    /**
+     * @param {number} row
+     * @param {number} column
+     * @param {number} player
+     * 
+     * Update `this.tokens` (logical) and `this.cellContainer.children[index]` (DOM)
+     * to reflect player's token in a certain row and column.
+     */
     setToken(row, column, player) {
         this.tokens[row][column] = player
         const cell = this.cellContainer.children[row * columnCount + column]
         cell.style.backgroundColor = playerToColor(player)
     }
 
+    /**
+     * @param {number} rowLatest
+     * @param {number} columnLatest
+     * 
+     * Returns whether playing at (`rowLatest`, `columnLatest`)
+     * is a winning move, looks at `this.tokens`.
+     */
     checkWin(rowLatest, columnLatest) {
         function readLine(ar, rowStart, columnStart, rowDelta, columnDelta, lineLength) {
             const line = []
@@ -86,6 +114,9 @@ class Board {
         )
     }
 
+    /**
+     * Reset tokens to all zeros (logical) and cells to be white (DOM).
+     */
     reset() {
         for (let i = 0; i < rowCount; i++) {
             for (let j = 0; j < columnCount; j++) {
@@ -97,7 +128,18 @@ class Board {
     }
 }
 
+/**
+ * Row of buttons for dropping tokens into a certain column,
+ * one button per column.
+ */
 class ColumnTriggers {
+    /**
+     * @param {HTMLDivElement} triggerContainer
+     * @param {CallableFunction} callback
+     * 
+     * Populate triggerContainer with buttons
+     * and give each button a listener to trigger callback.
+     */
     constructor(triggerContainer, callback) {
         this.triggerContainer = triggerContainer
         for (let column = 0; column < columnCount; column++) {
@@ -139,13 +181,12 @@ class ReplayButton {
     }
 }
 
-// Grid div that holds cell divs.
-const board = new Board(document.querySelector("#cell-container"))
-
-// E.g. "red turn", "yellow wins".
-const infoText = document.querySelector("#info-text")
-
-let player = 1
+const infoText = document.querySelector('#info-text') // E.g. 'red turn', 'yellow wins'.
+let player = 1 // Alternates between 1 and -1.
+const board = new Board(document.querySelector('#cell-container'))
+// These are the core events: dropping a token in a certain column, and playing again.
+const columnTriggers = new ColumnTriggers(document.querySelector('#trigger-container'), dropToken)
+const replayButton = new ReplayButton(document.querySelector('#replay-button'), replay)
 
 function dropToken(column) {
     const row = board.findTokenDropRow(column)
@@ -170,9 +211,3 @@ function replay() {
     player = 1
     infoText.innerText = 'red turn'
 }
-
-// Resets game state.
-const replayButton = new ReplayButton(document.querySelector('#replay-button'), replay)
-
-// Grid div that holds column triggers.
-const columnTriggers = new ColumnTriggers(document.querySelector("#trigger-container"), dropToken)
