@@ -45,3 +45,11 @@ body {
     width: 50%;
     text-align: center;
 }
+
+/* Media query for mobile devices */
+@media (max-width: 767px) {
+    body {
+        transform: scale(0.8);
+        transform-origin: top left; /* Adjust the origin as needed */
+    }
+}
