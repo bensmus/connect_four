@@ -1,5 +1,7 @@
-const rowCount = 6
-const columnCount = 7
+import { evalBoard, findTokenDropRow } from "./gameAnalysis.js"
+
+export const rowCount = 6
+export const columnCount = 7
 
 function playerToColor(player) {
     if (player == 1) { // Player 1: red
@@ -35,22 +37,6 @@ class Board {
     }
 
     /**
-     * @param {number} column
-     * 
-     * Return a row where the token would drop to.
-     * If the row is filled, return -1.
-     */
-    findTokenDropRow(column) {
-        // Start from bottom:
-        for (let row = rowCount - 1; row > -1; row--) {
-            if (this.tokens[row][column] == 0) {
-                return row
-            }
-        }
-        return -1
-    }
-    
-    /**
      * @param {number} row
      * @param {number} column
      * @param {number} player
@@ -62,56 +48,6 @@ class Board {
         this.tokens[row][column] = player
         const cell = this.cellContainer.children[row * columnCount + column]
         cell.style.backgroundColor = playerToColor(player)
-    }
-
-    /**
-     * @param {number} rowLatest
-     * @param {number} columnLatest
-     * 
-     * Returns whether playing at (`rowLatest`, `columnLatest`)
-     * is a winning move, looks at `this.tokens`.
-     */
-    checkWin(rowLatest, columnLatest) {
-        function readLine(ar, rowStart, columnStart, rowDelta, columnDelta, lineLength) {
-            const line = []
-            let row = rowStart
-            let column = columnStart
-            for (let iter = 0; iter < lineLength; iter++) {
-                if (row < rowCount && row >= 0 && column < columnCount && column >= 0) {
-                    line.push(ar[row][column])
-                }
-                row += rowDelta
-                column += columnDelta
-            }
-            return line
-        }
-
-        function fourInARow(ar, elem) {
-            let countInARow = 0
-            for (let i = 0; i < ar.length; i++) {
-                if (ar[i] == elem) {
-                    countInARow++
-                    if (countInARow == 4) {
-                        return true
-                    }
-                } else {
-                    countInARow = 0
-                }
-            }
-            return false
-        }
-
-        const playerToCheck = this.tokens[rowLatest][columnLatest]
-
-        const lineLength = 7
-        const horiz = readLine(this.tokens, rowLatest, columnLatest - 3, 0, 1, lineLength)
-        const vert = readLine(this.tokens, rowLatest - 3, columnLatest, 1, 0, lineLength)
-        const diagDown = readLine(this.tokens, rowLatest - 3, columnLatest - 3, 1, 1, lineLength)
-        const diagUp = readLine(this.tokens, rowLatest + 3, columnLatest - 3, -1, 1, lineLength)
-        return (
-            fourInARow(horiz, playerToCheck) || fourInARow(vert, playerToCheck) ||
-            fourInARow(diagDown, playerToCheck) || fourInARow(diagUp, playerToCheck)
-        )
     }
 
     /**
@@ -189,12 +125,12 @@ const columnTriggers = new ColumnTriggers(document.querySelector('#trigger-conta
 const replayButton = new ReplayButton(document.querySelector('#replay-button'), replay)
 
 function dropToken(column) {
-    const row = board.findTokenDropRow(column)
+    const row = findTokenDropRow(board.tokens, column)
     if (row == -1) {
         return  
     } 
     board.setToken(row, column, player)
-    if (board.checkWin(row, column)) {
+    if (evalBoard(board.tokens, row, column) != 0) {
         infoText.innerText = `${playerToColor(player)} wins`
         columnTriggers.disable()
         replayButton.enable()
