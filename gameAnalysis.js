@@ -70,3 +70,54 @@ export function findTokenDropRow(tokens, column) {
     }
     return -1
 }
+
+/**
+ * Returns a randomInteger in [min, max) (interval notation)
+ * assuming min and max are both integers.
+ * 
+ * @param {number} max 
+ * @param {number} min 
+ */
+function randomInteger(min, max) {
+    const range = max - min
+    const integerDelta = Math.floor(Math.random() * range)
+    return min + integerDelta
+}
+
+/**
+ * Shuffle array in place.
+ */
+function shuffle(ar) {
+    function swap(ar, i, j) {
+        const tmp = ar[i]
+        ar[i] = ar[j]
+        ar[j] = tmp
+    }
+    for (let i = ar.length - 1; i > 0; i--) {
+        const j = randomInteger(0, i + 1)
+        swap(ar, i, j)
+    }
+}
+
+/**
+ * Return row and column of where the computer (always player -1) will move.
+ * For now, computer chooses a random valid move.
+ * 
+ * @param {number[][]} tokens
+ */
+export function computerMove(tokens) {
+    const columns = [...Array(columnCount).keys()] // [0, 1, ... columnCount - 1]
+    shuffle(columns)
+    // Chooses columns in a random order. If a column is full
+    // it moves to the next column.
+    for (let index = 0; index < columns.length; index++) {
+        const column = columns[index]
+        const row = findTokenDropRow(tokens, column)
+        if (row != -1) {
+            return [row, column]
+        }
+    }
+    // Since there are 42 cells,
+    // and computer always goes second,
+    // it will always be able to find a move.
+}

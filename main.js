@@ -1,4 +1,4 @@
-import { evalBoard, findTokenDropRow } from "./gameAnalysis.js"
+import { evalBoard, findTokenDropRow, computerMove} from "./gameAnalysis.js"
 
 export const rowCount = 6
 export const columnCount = 7
@@ -119,6 +119,7 @@ class ReplayButton {
 
 const infoText = document.querySelector('#info-text') // E.g. 'red turn', 'yellow wins'.
 let player = 1 // Alternates between 1 and -1.
+let vsComputer = true
 const board = new Board(document.querySelector('#cell-container'))
 // These are the core events: dropping a token in a certain column, and playing again.
 const columnTriggers = new ColumnTriggers(document.querySelector('#trigger-container'), handleColumnTrigger)
@@ -130,17 +131,28 @@ const replayButton = new ReplayButton(document.querySelector('#replay-button'), 
 // c) column trigger drops token and is next turn.
 function handleColumnTrigger(column) {
     const row = findTokenDropRow(board.tokens, column)
-    if (row == -1) { // Column is full:
+    if (row == -1) { // a) Column is full:
         return
     } 
     board.setToken(row, column, player)
-    if (evalBoard(board.tokens, row, column) != 0) { // Player wins:
+    if (evalBoard(board.tokens, row, column) != 0) { // b) Player wins:
         infoText.innerText = `${playerToColor(player)} wins`
         columnTriggers.disable()
         replayButton.enable()
-    } else { // Next turn:
-        player *= -1
-        infoText.innerText = `${playerToColor(player)} turn`
+    } else { // c) Next turn:
+        if (vsComputer) { // Computer makes move:
+            const [row, column] = computerMove(board.tokens)
+            board.setToken(row, column, -1)
+            if (evalBoard(board.tokens, row, column) != 0) { // Computer wins:
+                infoText.innerText = 'computer wins'
+                columnTriggers.disable()
+                replayButton.enable()
+            }
+            // Computer did not win.
+        } else { // Allow next human player to make move:
+            player *= -1
+            infoText.innerText = `${playerToColor(player)} turn`
+        }
     }
 }
 
