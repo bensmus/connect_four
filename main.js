@@ -15,11 +15,11 @@ function playerToColor(player) {
 
 class Board {
     /**
-     * @param {HTMLDivElement} cellContainer
-     * 
      * Populate cellContainer (div with display grid styling) with cells and create
      * tokens which is a 2D array containing -1, 0, and 1
      * (player 1, player -1, and empty spaces on the board).
+     * 
+     * @param {HTMLDivElement} cellContainer
      */
     constructor(cellContainer) {
         this.cellContainer = cellContainer
@@ -37,12 +37,12 @@ class Board {
     }
 
     /**
+     * Update `this.tokens` (logical) and `this.cellContainer.children[index]` (DOM)
+     * to reflect player's token in a certain row and column.
+     * 
      * @param {number} row
      * @param {number} column
      * @param {number} player
-     * 
-     * Update `this.tokens` (logical) and `this.cellContainer.children[index]` (DOM)
-     * to reflect player's token in a certain row and column.
      */
     setToken(row, column, player) {
         this.tokens[row][column] = player
@@ -70,11 +70,11 @@ class Board {
  */
 class ColumnTriggers {
     /**
-     * @param {HTMLDivElement} triggerContainer
-     * @param {CallableFunction} callback
-     * 
      * Populate triggerContainer with buttons
      * and give each button a listener to trigger callback.
+     * 
+     * @param {HTMLDivElement} triggerContainer
+     * @param {CallableFunction} callback
      */
     constructor(triggerContainer, callback) {
         this.triggerContainer = triggerContainer
@@ -121,26 +121,30 @@ const infoText = document.querySelector('#info-text') // E.g. 'red turn', 'yello
 let player = 1 // Alternates between 1 and -1.
 const board = new Board(document.querySelector('#cell-container'))
 // These are the core events: dropping a token in a certain column, and playing again.
-const columnTriggers = new ColumnTriggers(document.querySelector('#trigger-container'), dropToken)
-const replayButton = new ReplayButton(document.querySelector('#replay-button'), replay)
+const columnTriggers = new ColumnTriggers(document.querySelector('#trigger-container'), handleColumnTrigger)
+const replayButton = new ReplayButton(document.querySelector('#replay-button'), handleReplay)
 
-function dropToken(column) {
+// Either:
+// a) column trigger does nothing because column is full OR
+// b) column trigger drops token and player wins OR
+// c) column trigger drops token and is next turn.
+function handleColumnTrigger(column) {
     const row = findTokenDropRow(board.tokens, column)
-    if (row == -1) {
-        return  
+    if (row == -1) { // Column is full:
+        return
     } 
     board.setToken(row, column, player)
-    if (evalBoard(board.tokens, row, column) != 0) {
+    if (evalBoard(board.tokens, row, column) != 0) { // Player wins:
         infoText.innerText = `${playerToColor(player)} wins`
         columnTriggers.disable()
         replayButton.enable()
-    } else {
+    } else { // Next turn:
         player *= -1
         infoText.innerText = `${playerToColor(player)} turn`
     }
 }
 
-function replay() {
+function handleReplay() {
     board.reset()
     columnTriggers.enable()
     replayButton.disable()

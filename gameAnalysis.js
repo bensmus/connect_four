@@ -2,6 +2,10 @@ import { rowCount, columnCount } from "./main.js";
 
 /**
  * Returns 1 if player 1 won, -1 if player -1 won, and 0 otherwise.
+ * 
+ * @param {number[][]} tokens 
+ * @param {number} rowLatest
+ * @param {number} columnLatest 
  */
 export function evalBoard(tokens, rowLatest, columnLatest) {
     function readLine(ar, rowStart, columnStart, rowDelta, columnDelta, lineLength) {
@@ -53,6 +57,9 @@ export function evalBoard(tokens, rowLatest, columnLatest) {
 /**
  * Return a row where the token would drop to.
  * If the row is filled, return -1.
+ * 
+ * @param {number[][]} tokens 
+ * @param {number} column 
  */
 export function findTokenDropRow(tokens, column) {
     // Start from bottom:
