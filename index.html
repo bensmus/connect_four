@@ -7,13 +7,20 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="trigger-container"></div>
-    <div id="cell-container"></div>
-    <div id="info-and-replay-container">
-        <div id="info-text">red turn</div>
-        <button id="replay-button" disabled>play again</button>
+    <div id="overlay">
+        <h1>New Connect Four Game</h1>
+        <button id="vs-computer-button">vs computer</button>
+        <button id="vs-human-local-button">two player (local)</button>
     </div>
-    <script type="module" src="gameAnalysis.js"></script>
-    <script type="module" src="main.js" ></script>
+    <div id="game">
+        <div id="trigger-container"></div>
+        <div id="cell-container"></div>
+        <div id="info-and-new-game-container">
+            <div id="info-text">red turn</div>
+            <button id="new-game-button">new game</button>
+        </div>
+        <script type="module" src="gameAnalysis.js"></script>
+        <script type="module" src="main.js" ></script>
+    </div>
 </body>
 </html>

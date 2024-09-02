@@ -102,28 +102,29 @@ class ColumnTriggers {
     }
 }
 
-class ReplayButton {
-    constructor(replayButton, callback) {
-        this.replayButton = replayButton
-        this.replayButton.addEventListener('click', callback)
-    }
-
-    enable() {
-        this.replayButton.disabled = false
-    }
-
-    disable() {
-        this.replayButton.disabled = true
-    }
-}
-
 const infoText = document.querySelector('#info-text') // E.g. 'red turn', 'yellow wins'.
 let player = 1 // Alternates between 1 and -1.
-let vsComputer = true
 const board = new Board(document.querySelector('#cell-container'))
 // These are the core events: dropping a token in a certain column, and playing again.
 const columnTriggers = new ColumnTriggers(document.querySelector('#trigger-container'), handleColumnTrigger)
-const replayButton = new ReplayButton(document.querySelector('#replay-button'), handleReplay)
+
+let vsComputer = true
+const newGameButton = document.querySelector('#new-game-button')
+const overlay = document.querySelector('#overlay')
+const vsComputerButton = document.querySelector('#vs-computer-button')
+const vsHumanLocalButton = document.querySelector('#vs-human-local-button')
+newGameButton.addEventListener('click', () => {overlay.style.display = 'block'})
+vsComputerButton.addEventListener('click', () => {newGame(true)})
+vsHumanLocalButton.addEventListener('click', () => {newGame(false)})
+
+function newGame(vsComputerVal) {
+    vsComputer = vsComputerVal
+    overlay.style.display = 'none'
+    board.reset()
+    columnTriggers.enable()
+    player = 1
+    infoText.innerText = 'red turn'
+}
 
 // Either:
 // a) column trigger does nothing because column is full OR
@@ -138,15 +139,13 @@ function handleColumnTrigger(column) {
     if (evalBoard(board.tokens, row, column) != 0) { // b) Player wins:
         infoText.innerText = `${playerToColor(player)} wins`
         columnTriggers.disable()
-        replayButton.enable()
     } else { // c) Next turn:
         if (vsComputer) { // Computer makes move:
             const [row, column] = computerMove(board.tokens)
             board.setToken(row, column, -1)
             if (evalBoard(board.tokens, row, column) != 0) { // Computer wins:
                 infoText.innerText = 'computer wins'
-                columnTriggers.disable()
-                replayButton.enable()
+                columnTriggers.disable()   
             }
             // Computer did not win.
         } else { // Allow next human player to make move:
@@ -154,12 +153,4 @@ function handleColumnTrigger(column) {
             infoText.innerText = `${playerToColor(player)} turn`
         }
     }
-}
-
-function handleReplay() {
-    board.reset()
-    columnTriggers.enable()
-    replayButton.disable()
-    player = 1
-    infoText.innerText = 'red turn'
 }
