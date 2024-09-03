@@ -1,11 +1,13 @@
 import { rowCount, columnCount } from "./main.js";
 
-// FIXME - You are not handling draw anywhere
 /**
- * Returns 1 if player 1 won, 
- * -1 if player -1 won, 
- * 2 if draw,
- * and 0 otherwise.
+ * Returns score for move evaluation
+ * and whether the game is over.
+ * 
+ * Player 1 win: 1, true
+ * Player -1 win: -1, true
+ * Draw: 0, true
+ * Inconclusive: 0, false
  * 
  * @param {number[][]} tokens 
  * @param {number} rowLatest
@@ -57,7 +59,7 @@ export function evalBoard(tokens, rowLatest, columnLatest) {
 
    
     if (checkDraw()) {
-        return 2
+        return [0, true]
     }
 
     const playerToCheck = tokens[rowLatest][columnLatest]
@@ -72,9 +74,9 @@ export function evalBoard(tokens, rowLatest, columnLatest) {
         fourInARow(diagDown, playerToCheck) || fourInARow(diagUp, playerToCheck)
     )
     if (win) {
-        return playerToCheck
+        return [playerToCheck, true]
     }
-    return 0
+    return [0, false]
 }
 
 /**
@@ -152,9 +154,9 @@ export function computerMove(tokens) {
  * 1 means immediate win. -1 means opponent will win next move. 0 otherwise.
  * Usage in computerMove: after doing the shuffle, track the highest score move, and make that move.
  */
-function moveScoreTwoPly(tokens, row, column, player) {
-    function isWinningMove(tokens, row, column, player) {
-        //FIXME - This is terrible! Have a state object with update method. 
-        return evalBoard(updateTokens(tokens, row, column, player), row, column) == player
-    }
-}
+// function moveScoreTwoPly(tokens, row, column, player) {
+//     function isWinningMove(tokens, row, column, player) {
+//         //FIXME - This is terrible! Have a state object with update method. 
+//         return evalBoard(updateTokens(tokens, row, column, player), row, column) == player
+//     }
+// }

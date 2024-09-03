@@ -126,6 +126,16 @@ function newGame(vsComputerVal) {
     infoText.innerText = 'red turn'
 }
 
+function scoreMessage(score) {
+    if (score == -1) {
+        return 'yellow wins'
+    }
+    if (score == 1) {
+        return 'red wins'
+    }
+    return 'draw'
+}
+
 // Either:
 // a) column trigger does nothing because column is full OR
 // b) column trigger drops token and player wins OR
@@ -136,15 +146,17 @@ function handleColumnTrigger(column) {
         return
     } 
     board.setToken(row, column, player)
-    if (evalBoard(board.tokens, row, column) != 0) { // b) Player wins:
-        infoText.innerText = `${playerToColor(player)} wins`
+    const [score, gameOver] = evalBoard(board.tokens, row, column)
+    if (gameOver) { // b) Player wins or draw:
+        infoText.innerText = scoreMessage(score)
         columnTriggers.disable()
     } else { // c) Next turn:
         if (vsComputer) { // Computer makes move:
             const [row, column] = computerMove(board.tokens)
             board.setToken(row, column, -1)
-            if (evalBoard(board.tokens, row, column) != 0) { // Computer wins:
-                infoText.innerText = 'computer wins'
+            const [score, gameOver] = evalBoard(board.tokens, row, column)
+            if (gameOver) { // Computer wins or draw:
+                infoText.innerText = scoreMessage(score)
                 columnTriggers.disable()   
             }
             // Computer did not win.
