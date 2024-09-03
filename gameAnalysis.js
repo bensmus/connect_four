@@ -1,7 +1,11 @@
 import { rowCount, columnCount } from "./main.js";
 
+// FIXME - You are not handling draw anywhere
 /**
- * Returns 1 if player 1 won, -1 if player -1 won, and 0 otherwise.
+ * Returns 1 if player 1 won, 
+ * -1 if player -1 won, 
+ * 2 if draw,
+ * and 0 otherwise.
  * 
  * @param {number[][]} tokens 
  * @param {number} rowLatest
@@ -35,6 +39,25 @@ export function evalBoard(tokens, rowLatest, columnLatest) {
             }
         }
         return false
+    }
+
+    function checkDraw() {
+        // Draw can only occur if last move was in row 0.
+        if (rowLatest != 0) {
+            return false
+        }
+        // If row 0 is all nonzero, it is a draw.
+        for (let column = 0; column < columnCount; column++) {
+            if (tokens[0][column] == 0) {
+                return false
+            }
+        }
+        return true
+    }
+
+   
+    if (checkDraw()) {
+        return 2
     }
 
     const playerToCheck = tokens[rowLatest][columnLatest]
@@ -120,4 +143,18 @@ export function computerMove(tokens) {
     // Since there are 42 cells,
     // and computer always goes second,
     // it will always be able to find a move.
+}
+
+/**
+ * Simple move evaluation function that returns
+ * 1, -1, or 0 for player token at row and column.
+ * 
+ * 1 means immediate win. -1 means opponent will win next move. 0 otherwise.
+ * Usage in computerMove: after doing the shuffle, track the highest score move, and make that move.
+ */
+function moveScoreTwoPly(tokens, row, column, player) {
+    function isWinningMove(tokens, row, column, player) {
+        //FIXME - This is terrible! Have a state object with update method. 
+        return evalBoard(updateTokens(tokens, row, column, player), row, column) == player
+    }
 }
