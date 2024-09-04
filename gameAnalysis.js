@@ -16,10 +16,21 @@ function randomInteger(min, max) {
 
 // Return column that computer moves
 export function computerMove(gameState) {
-    // Currently does a random move.
-    const columns = gameState.tokens.columnsCanDrop()
-    return columns[randomInteger(0, columns.length)]
+    // Random move:
+    // const columns = gameState.tokens.columnsCanDrop()
+    // return columns[randomInteger(0, columns.length)]
     
+    // Find winning move if it exists:
+    const states = gameState.allChildStates()
+    for (const state of states) {
+        if (state.checkWin()) {
+            return state.lastMove.column
+        }
+    }
+
+    // No winning move: return a random move:
+    return states[randomInteger(0, states.length)].lastMove.column
+
     // Since there are 42 cells,
     // and computer always goes second,
     // it will always be able to find a move.
