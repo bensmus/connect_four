@@ -1,100 +1,5 @@
-import { rowCount, columnCount } from "./main.js";
-
-/**
- * Returns score for move evaluation
- * and whether the game is over.
- * 
- * Player 1 win: 1, true
- * Player -1 win: -1, true
- * Draw: 0, true
- * Inconclusive: 0, false
- * 
- * @param {number[][]} tokens 
- * @param {number} rowLatest
- * @param {number} columnLatest 
- */
-export function evalBoard(tokens, rowLatest, columnLatest) {
-    function readLine(ar, rowStart, columnStart, rowDelta, columnDelta, lineLength) {
-        const line = []
-        let row = rowStart
-        let column = columnStart
-        for (let iter = 0; iter < lineLength; iter++) {
-            if (row < rowCount && row >= 0 && column < columnCount && column >= 0) {
-                line.push(ar[row][column])
-            }
-            row += rowDelta
-            column += columnDelta
-        }
-        return line
-    }
-
-    function fourInARow(ar, elem) {
-        let countInARow = 0
-        for (let i = 0; i < ar.length; i++) {
-            if (ar[i] == elem) {
-                countInARow++
-                if (countInARow == 4) {
-                    return true
-                }
-            } else {
-                countInARow = 0
-            }
-        }
-        return false
-    }
-
-    function checkDraw() {
-        // Draw can only occur if last move was in row 0.
-        if (rowLatest != 0) {
-            return false
-        }
-        // If row 0 is all nonzero, it is a draw.
-        for (let column = 0; column < columnCount; column++) {
-            if (tokens[0][column] == 0) {
-                return false
-            }
-        }
-        return true
-    }
-
-   
-    if (checkDraw()) {
-        return [0, true]
-    }
-
-    const playerToCheck = tokens[rowLatest][columnLatest]
-
-    const lineLength = 7
-    const horiz = readLine(tokens, rowLatest, columnLatest - 3, 0, 1, lineLength)
-    const vert = readLine(tokens, rowLatest - 3, columnLatest, 1, 0, lineLength)
-    const diagDown = readLine(tokens, rowLatest - 3, columnLatest - 3, 1, 1, lineLength)
-    const diagUp = readLine(tokens, rowLatest + 3, columnLatest - 3, -1, 1, lineLength)
-    const win = (
-        fourInARow(horiz, playerToCheck) || fourInARow(vert, playerToCheck) ||
-        fourInARow(diagDown, playerToCheck) || fourInARow(diagUp, playerToCheck)
-    )
-    if (win) {
-        return [playerToCheck, true]
-    }
-    return [0, false]
-}
-
-/**
- * Return a row where the token would drop to.
- * If the row is filled, return -1.
- * 
- * @param {number[][]} tokens 
- * @param {number} column 
- */
-export function findTokenDropRow(tokens, column) {
-    // Start from bottom:
-    for (let row = rowCount - 1; row > -1; row--) {
-        if (tokens[row][column] == 0) {
-            return row
-        }
-    }
-    return -1
-}
+export const rowCount = 6
+export const columnCount = 7
 
 /**
  * Returns a randomInteger in [min, max) (interval notation)
@@ -109,54 +14,156 @@ function randomInteger(min, max) {
     return min + integerDelta
 }
 
-/**
- * Shuffle array in place.
- */
-function shuffle(ar) {
-    function swap(ar, i, j) {
-        const tmp = ar[i]
-        ar[i] = ar[j]
-        ar[j] = tmp
-    }
-    for (let i = ar.length - 1; i > 0; i--) {
-        const j = randomInteger(0, i + 1)
-        swap(ar, i, j)
-    }
-}
-
-/**
- * Return row and column of where the computer (always player -1) will move.
- * For now, computer chooses a random valid move.
- * 
- * @param {number[][]} tokens
- */
-export function computerMove(tokens) {
-    const columns = [...Array(columnCount).keys()] // [0, 1, ... columnCount - 1]
-    shuffle(columns)
-    // Chooses columns in a random order. If a column is full
-    // it moves to the next column.
-    for (let index = 0; index < columns.length; index++) {
-        const column = columns[index]
-        const row = findTokenDropRow(tokens, column)
-        if (row != -1) {
-            return [row, column]
-        }
-    }
+// Return column that computer moves
+export function computerMove(gameState) {
+    // Currently does a random move.
+    const columns = gameState.tokens.columnsCanDrop()
+    return columns[randomInteger(0, columns.length)]
+    
     // Since there are 42 cells,
     // and computer always goes second,
     // it will always be able to find a move.
 }
 
-/**
- * Simple move evaluation function that returns
- * 1, -1, or 0 for player token at row and column.
- * 
- * 1 means immediate win. -1 means opponent will win next move. 0 otherwise.
- * Usage in computerMove: after doing the shuffle, track the highest score move, and make that move.
- */
-// function moveScoreTwoPly(tokens, row, column, player) {
-//     function isWinningMove(tokens, row, column, player) {
-//         //FIXME - This is terrible! Have a state object with update method. 
-//         return evalBoard(updateTokens(tokens, row, column, player), row, column) == player
-//     }
-// }
+function zeroArray(count) {
+    const ar = Array(count)
+    ar.fill(0)
+    return ar
+}
+
+class Tokens {
+    constructor(ar) {
+        this.ar = ar ?? zeroArray(rowCount * columnCount)
+    }
+
+    readToken(row, column) {
+        return this.ar[row * columnCount + column]
+    }
+
+    setToken(row, column, to) {
+        this.ar[row * columnCount + column] = to
+    }
+
+    clone() {
+        return new Tokens([...this.ar])
+    }
+
+    // Return a row where the token would drop to.
+    // If the row is filled, return -1.
+    findDropRow(column) {
+        for (let row = rowCount - 1; row > -1; row--) {
+            if (this.readToken(row, column) == 0) {
+                return row
+            }
+        }
+        return -1
+    }
+
+    // Read a line of tokens.
+    readLine(rowStart, columnStart, rowDelta, columnDelta, lineLength) {
+        const line = []
+        let row = rowStart
+        let column = columnStart
+        for (let iter = 0; iter < lineLength; iter++) {
+            if (row < rowCount && row >= 0 && column < columnCount && column >= 0) {
+                line.push(this.readToken(row, column))
+            }
+            row += rowDelta
+            column += columnDelta
+        }
+        return line
+    }
+
+    // Returns in which columns a token can be dropped.
+    columnsCanDrop() {
+        const columns = []
+        for (let column = 0; column < columnCount; column++) {
+            if (this.readToken(0, column) == 0) {
+                columns.push(column)
+            }
+        }
+        return columns
+    }
+}
+
+export class GameState {
+    constructor(tokens, lastMove) {
+        this.tokens = tokens ?? new Tokens()
+        this.lastMove = lastMove ?? null
+    }
+
+    lastPlayer() {
+        if (this.lastMove) {
+            return this.tokens.readToken(this.lastMove.row, this.lastMove.column)
+        }
+        // childState of initial GameState: should put red tokens:
+        // so, return -1.
+        return -1
+    }
+
+    childState(column) {
+        const row = this.tokens.findDropRow(column)
+        if (row == -1) {
+            throw new Error("No child state exists with that column")
+        }
+        const childTokens = this.tokens.clone()
+        childTokens.setToken(row, column, -this.lastPlayer())
+        return new GameState(childTokens, {row: row, column: column})
+    }
+
+    allChildStates() {
+        const columns = this.tokens.columnsCanDrop()
+        const childStates = []
+        for (const column of columns) {
+            childStates.push(this.childState(column))
+        }
+        return childStates
+    }
+
+    // Returns whether this is a winning state.
+    // Assumes GameState is valid, i.e. 
+    // lastMove would have to be winning move.
+    checkWin() {
+        // Returns whether `ar` contains `elem` repeated four consecutive times.
+        function fourInARow(ar, elem) {
+            let countInARow = 0
+            for (let i = 0; i < ar.length; i++) {
+                if (ar[i] == elem) {
+                    countInARow++
+                    if (countInARow == 4) {
+                        return true
+                    }
+                } else {
+                    countInARow = 0
+                }
+            }
+            return false
+        }
+        const lineLength = 7
+        const horiz = this.tokens.readLine(this.lastMove.row, this.lastMove.column - 3, 0, 1, lineLength)
+        const vert = this.tokens.readLine(this.lastMove.row - 3, this.lastMove.column, 1, 0, lineLength)
+        const diagDown = this.tokens.readLine(this.lastMove.row - 3, this.lastMove.column - 3, 1, 1, lineLength)
+        const diagUp = this.tokens.readLine(this.lastMove.row + 3, this.lastMove.column - 3, -1, 1, lineLength)
+        return (
+            fourInARow(horiz, this.lastPlayer()) || fourInARow(vert, this.lastPlayer()) ||
+            fourInARow(diagDown, this.lastPlayer()) || fourInARow(diagUp, this.lastPlayer())
+        )
+    }
+
+    // Returns either:
+    // [1, true]: P1 win 
+    // [-1, true]: P2 win
+    // [0, true]: draw
+    // [0, false]: game not finished
+    evaluate() {
+        if (this.tokens.columnsCanDrop().length == 0) {
+            return [0, true]
+        }
+        
+        if (this.checkWin()) {
+            return [this.lastPlayer(), true]
+        }
+
+        return [0, false]
+    }
+}
