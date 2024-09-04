@@ -17,19 +17,21 @@ function randomInteger(min, max) {
 // Return column that computer moves
 export function computerMove(gameState) {
     // Random move:
-    // const columns = gameState.tokens.columnsCanDrop()
-    // return columns[randomInteger(0, columns.length)]
+    const columns = gameState.tokens.columnsCanDrop()
+    const minimaxScore = gameState.getMinimaxScore(2)
+    console.log(minimaxScore)
+    return columns[randomInteger(0, columns.length)]
     
-    // Find winning move if it exists:
-    const states = gameState.allChildStates()
-    for (const state of states) {
-        if (state.checkWin()) {
-            return state.lastMove.column
-        }
-    }
+    // // Find winning move if it exists:
+    // const states = gameState.allChildStates()
+    // for (const state of states) {
+    //     if (state.checkWin()) {
+    //         return state.lastMove.column
+    //     }
+    // }
+    // // No winning move: return a random move:
+    // return states[randomInteger(0, states.length)].lastMove.column
 
-    // No winning move: return a random move:
-    return states[randomInteger(0, states.length)].lastMove.column
 
     // Since there are 42 cells,
     // and computer always goes second,
@@ -176,5 +178,43 @@ export class GameState {
         }
 
         return [0, false]
+    }
+
+    // Returns 1, -1, or 0.
+    getMinimaxScore(depthLimit) {
+        // Also returns 1, -1, or 0.
+        function minimaxRecursive(gameState, depth, depthLimit) {
+            const [score, gameOver] = gameState.evaluate()
+            
+            // Base case 1:
+            if (gameOver) {
+                return score
+            }
+            
+            // Base case 2:
+            if (depth == depthLimit) {
+                return 0 // Could not reach a winning or loosing state.
+            }
+            
+            // Recursive case:
+            const states = gameState.allChildStates()
+            const isMaximizer = gameState.lastPlayer() == -1
+            let bestScore = isMaximizer ? -1 : 1
+            const betterScore = (score, referenceScore) => {
+                if (isMaximizer) {
+                    return score > referenceScore
+                }
+                return score < referenceScore
+            }
+            for (const state of states) {
+                const score = minimaxRecursive(state, depth + 1, depthLimit)
+                if (betterScore(score, bestScore)) {
+                    bestScore = score
+                }
+            }
+            return bestScore
+        }
+        
+        return minimaxRecursive(this, 0, depthLimit)
     }
 }
