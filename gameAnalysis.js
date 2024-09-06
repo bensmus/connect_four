@@ -200,12 +200,13 @@ export class GameState {
     // [0, true]: draw
     // [0, false]: game not finished
     evaluate() {
-        if (this.tokens.columnsCanDrop().length == 0) {
-            return [0, true]
-        }
-        
         if (this.checkWin()) {
             return [this.lastPlayer(), true]
+        }
+
+        // Not a win and no moves:
+        if (this.tokens.columnsCanDrop().length == 0) {
+            return [0, true]
         }
 
         return [0, false]
