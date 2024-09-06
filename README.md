@@ -1,6 +1,6 @@
 # About
 Source code for JavaScript connect four with 'local PVP' and 'vs computer' modes.
-[Try it out](connect-four-1234.surge.sh)
+[Try it out](https://connect-four-1234.surge.sh)
 
 # How 'vs computer' works
 The computer uses depth 5 [minimax](https://en.wikipedia.org/wiki/Minimax) 
