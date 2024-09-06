@@ -22,30 +22,53 @@ function randomChoice(array) {
 // Return column that computer moves.
 export function computerMove(gameState) {
     const states = gameState.allChildStates()
-    let bestScore = 1
-    let bestState = states[0]
-    for (const state of states) {
-        const score = state.getMinimaxScore(5) 
-        if (score < bestScore) {
-            bestScore = score
-            bestState = state
+    // let bestScore = 1
+    // let bestState = states[0]
+    // for (const state of states) {
+    //     const score = state.getMinimaxScore(5) 
+    //     if (score < bestScore) {
+    //         bestScore = score
+    //         bestState = state
+    //     }
+    // }
+
+    function makeMap(keys, keyFunc) {
+        const map = new Map()
+        for (const key of keys) {
+            const value = keyFunc(key)
+            map.set(key, value)
         }
+        return map
     }
+
+    function minValue(map) {
+        return Math.min(...map.values())
+    }
+
+    function keysWithValue(map, targetValue) {
+        const keys = []
+        for (const [key, value] of map.entries()) {
+            if (value == targetValue) {
+                keys.push(key)
+            }
+        }
+        return keys
+    }
+
+    let stateScoreMap = makeMap(states, (state) => state.getMinimaxScore(5))
+    let bestScore = minValue(stateScoreMap)
 
     if (bestScore == 1) { // "Mate in 5" or less from the player: computer can't do anything.
         // Repeat the process assuming the player
         // isn't smart enough to read 5 moves ahead?
         
         // Bandaid fix: Delay the win:
-        for (const state of states) {
-            const score = state.getMinimaxScore(1) 
-            if (score < bestScore) {
-                bestScore = score
-                bestState = state
-            }
-        }
+        stateScoreMap = makeMap(states, (state) => state.getMinimaxScore(1))
+        bestScore = minValue(stateScoreMap)
     }
 
+    const bestStates = keysWithValue(stateScoreMap, bestScore)
+    const bestState = randomChoice(bestStates)
     return bestState.lastMove.column
 
     // Since there are 42 cells,
