@@ -60,8 +60,23 @@ export function computerMove(gameState) {
         bestScore = minValue(stateScoreMap)
     }
 
+    // `bestStates` all provide highest possible minimax score.
+    // Choose state with `lastMove` closest to middle bottom (which is {row: 5, column: 3}).
+    function applyHeuristic(bestStates) {
+        function howBad(move) {
+            const bottomRow = 5
+            const middleColumn = 3
+            // It's worse to be far from middle column.
+            const columnDistanceWeight = 1.5
+            return Math.abs(move.row - bottomRow) + columnDistanceWeight * Math.abs(move.column - middleColumn)
+        }
+        const heuristicMap = makeMap(bestStates, (state) => howBad(state.lastMove))
+        const bestHeuristic = minValue(heuristicMap)
+        return randomChoice(keysWithValue(heuristicMap, bestHeuristic))
+    }
+
     const bestStates = keysWithValue(stateScoreMap, bestScore)
-    const bestState = randomChoice(bestStates)
+    const bestState = applyHeuristic(bestStates)
     return bestState.lastMove.column
 
     // Since there are 42 cells,
