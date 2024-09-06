@@ -20,17 +20,9 @@ function randomChoice(array) {
 }
 
 // Return column that computer moves.
+// Uses minimax and chooses a random low scoring state (computer is always minimizer).
 export function computerMove(gameState) {
     const states = gameState.allChildStates()
-    // let bestScore = 1
-    // let bestState = states[0]
-    // for (const state of states) {
-    //     const score = state.getMinimaxScore(5) 
-    //     if (score < bestScore) {
-    //         bestScore = score
-    //         bestState = state
-    //     }
-    // }
 
     function makeMap(keys, keyFunc) {
         const map = new Map()
