@@ -1,5 +1,5 @@
 :root {
-    --cell-size: 50px;
+    --cell-size: 10vmin;
     --grid-count: 7;
 }
 
@@ -10,7 +10,7 @@ body {
 #game {
     margin: auto;
     max-width: min-content;
-    padding: 30px;
+    padding: 50px;
     font-family: sans-serif;
 }
 
@@ -50,14 +50,6 @@ body {
     text-align: center;
 }
 
-/* Media query for mobile devices */
-@media (max-width: 767px) {
-    body {
-        transform: scale(0.8);
-        transform-origin: top left; /* Adjust the origin as needed */
-    }
-}
-
 #overlay {
     display: block;
     z-index: 2;
@@ -80,6 +72,8 @@ body {
     top: 0;
     z-index: 2;
     padding: 12px;
+    font-family: sans-serif;
+    font-size: min(2vmin, 14px);
 }
 
 #source-code-link {
