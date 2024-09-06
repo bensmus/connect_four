@@ -47,12 +47,13 @@ export function computerMove(gameState) {
         return keys
     }
 
-    let stateScoreMap = makeMap(states, (state) => state.getMinimaxScore(5))
+    const minimaxDepth = 5
+    let stateScoreMap = makeMap(states, (state) => state.getMinimaxScore(minimaxDepth))
     let bestScore = minValue(stateScoreMap)
 
-    if (bestScore == 1) { // "Mate in 5" or less from the player: computer can't do anything.
+    if (bestScore == 1) { // "Mate in <minimaxDepth>" or less from the player: computer can't do anything.
         // Repeat the process assuming the player
-        // isn't smart enough to read 5 moves ahead?
+        // isn't smart enough to read <minimaxDepth> moves ahead?
         
         // Bandaid fix: Delay the win:
         stateScoreMap = makeMap(states, (state) => state.getMinimaxScore(1))

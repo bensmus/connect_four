@@ -29,6 +29,20 @@ class TokenUI {
         cell.style.backgroundColor = playerToColor(player)
     }
 
+    highlightMove(move) {
+        const {row, column} = move
+        const cell = this.cellContainer.children[row * columnCount + column] 
+        cell.style.zIndex = '1'
+        cell.style.outline = '7px solid cyan'
+    }
+
+    dehighlightMove(move) {
+        const {row, column} = move
+        const cell = this.cellContainer.children[row * columnCount + column] 
+        cell.style.outline = 'none'
+        cell.style.zIndex = '0'
+    }
+
     reset() {
         for (let i = 0; i < rowCount * columnCount; i++) {
             const cell = this.cellContainer.children[i]
@@ -108,19 +122,25 @@ class Game {
     }
 
     #dropToken(column) {
+        if (this.gameState.lastMove) {
+            this.tokenUI.dehighlightMove(this.gameState.lastMove)
+        }
         this.gameState = this.gameState.childState(column)
         this.tokenUI.renderMove(this.gameState.lastMove, this.gameState.lastPlayer())
+        this.tokenUI.highlightMove(this.gameState.lastMove)
         this.infoText.innerText = this.#turnMessage(-this.gameState.lastPlayer())
     }
 
-    #columnCallback(column) {
+    async #columnCallback(column) {
         this.#dropToken(column)
         const [score, isGameOver] = this.gameState.evaluate()
         if (isGameOver) {
             this.#gameOver(score)
         } else if (this.vsComputer) {
-            const computerColumn = computerMove(this.gameState)
+            this.columnTriggers.disable()
+            const computerColumn = await this.#runComputerMoveAsync()
             this.#dropToken(computerColumn)
+            this.columnTriggers.enable()
             const [score, isGameOver] = this.gameState.evaluate()
             if (isGameOver) {
                 this.#gameOver(score)
@@ -128,7 +148,19 @@ class Game {
         }
     }
 
+    // Running `computerMove` in this way sets priority to the browser
+    // and makes it so it doesn't block browser UI updating.
+    #runComputerMoveAsync() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const computerColumn = computerMove(this.gameState)
+                resolve(computerColumn)
+            }, 100);
+        })
+    }
+
     newGame() {
+        this.tokenUI.dehighlightMove(this.gameState.lastMove)
         this.gameState = new GameState()
         this.tokenUI.reset()
         this.columnTriggers.enable()
