@@ -14,24 +14,39 @@ function randomInteger(min, max) {
     return min + integerDelta
 }
 
-// Return column that computer moves
-export function computerMove(gameState) {
-    // Random move:
-    const columns = gameState.tokens.columnsCanDrop()
-    const minimaxScore = gameState.getMinimaxScore(2)
-    console.log(minimaxScore)
-    return columns[randomInteger(0, columns.length)]
-    
-    // // Find winning move if it exists:
-    // const states = gameState.allChildStates()
-    // for (const state of states) {
-    //     if (state.checkWin()) {
-    //         return state.lastMove.column
-    //     }
-    // }
-    // // No winning move: return a random move:
-    // return states[randomInteger(0, states.length)].lastMove.column
+function randomChoice(array) {
+    const randomIndex = randomInteger(0, array.length)
+    return array[randomIndex]
+}
 
+// Return column that computer moves.
+export function computerMove(gameState) {
+    const states = gameState.allChildStates()
+    let bestScore = 1
+    let bestState = states[0]
+    for (const state of states) {
+        const score = state.getMinimaxScore(5) 
+        if (score < bestScore) {
+            bestScore = score
+            bestState = state
+        }
+    }
+
+    if (bestScore == 1) { // "Mate in 5" or less from the player: computer can't do anything.
+        // Repeat the process assuming the player
+        // isn't smart enough to read 5 moves ahead?
+        
+        // Bandaid fix: Delay the win:
+        for (const state of states) {
+            const score = state.getMinimaxScore(1) 
+            if (score < bestScore) {
+                bestScore = score
+                bestState = state
+            }
+        }
+    }
+
+    return bestState.lastMove.column
 
     // Since there are 42 cells,
     // and computer always goes second,
